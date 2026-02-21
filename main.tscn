@@ -3,9 +3,13 @@
 [ext_resource type="Script" uid="uid://ck5xrfm4667qq" path="res://main.gd" id="1_7mycd"]
 [ext_resource type="PackedScene" uid="uid://bky7hwurpo31r" path="res://clickable.tscn" id="1_ig7tw"]
 [ext_resource type="Script" uid="uid://pqliw5wj4d8p" path="res://tannie_speech_box.gd" id="2_0xm2m"]
+[ext_resource type="Texture2D" uid="uid://bem00ugyxyifw" path="res://archive_bg.png" id="2_272bh"]
 [ext_resource type="PackedScene" uid="uid://c4n1yjgc3ryno" path="res://microfilm_view.tscn" id="4_1bvp3"]
 [ext_resource type="Texture2D" uid="uid://dgl10n2iuj0ic" path="res://icon.svg" id="5_lquwl"]
+[ext_resource type="Texture2D" uid="uid://dcdbmw6hq1jaw" path="res://tannie.png" id="6_5vw27"]
 [ext_resource type="Script" uid="uid://bglid4layd6sq" path="res://redacted_page.gd" id="6_7mycd"]
+[ext_resource type="Texture2D" uid="uid://nrd5ayj8obxx" path="res://microfilm_small.png" id="9_kek77"]
+[ext_resource type="Texture2D" uid="uid://dqgts6qv78ajl" path="res://redactedfile_small.png" id="10_4c57u"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ig7tw"]
 size = Vector2(334, 268)
@@ -16,13 +20,27 @@ size = Vector2(503, 133)
 [node name="Main" type="Node2D" unique_id=19023574]
 script = ExtResource("1_7mycd")
 
+[node name="ArchiveBg" type="Sprite2D" parent="." unique_id=1522797132]
+position = Vector2(540, 326)
+scale = Vector2(3.623686, 3.472421)
+texture = ExtResource("2_272bh")
+
 [node name="microfilm_viewer" parent="." unique_id=450030852 instance=ExtResource("1_ig7tw")]
-position = Vector2(142, 450)
+position = Vector2(213, 375)
+
+[node name="Label" parent="microfilm_viewer" index="0" unique_id=1826317297]
+visible = false
 
 [node name="CollisionShape2D" parent="microfilm_viewer" index="1" unique_id=238906429]
-position = Vector2(55, 14)
+position = Vector2(120, 34)
+
+[node name="MicrofilmSmall" type="Sprite2D" parent="microfilm_viewer" unique_id=2105892081]
+position = Vector2(143, 73)
+scale = Vector2(2.843824, 2.6575048)
+texture = ExtResource("9_kek77")
 
 [node name="Icon2" type="Sprite2D" parent="microfilm_viewer" unique_id=30784691]
+visible = false
 position = Vector2(79, 22)
 scale = Vector2(2.28, 0.68)
 texture = ExtResource("5_lquwl")
@@ -49,11 +67,18 @@ placeholder_text = "what ya lookin for?"
 [node name="tannie" type="Area2D" parent="TannieSpeechBox" unique_id=1189918112]
 position = Vector2(159, 246)
 
+[node name="Tannie" type="Sprite2D" parent="TannieSpeechBox/tannie" unique_id=1173362684]
+position = Vector2(37, 113)
+scale = Vector2(3.6141396, 3.6141396)
+texture = ExtResource("6_5vw27")
+
 [node name="Icon" type="Sprite2D" parent="TannieSpeechBox/tannie" unique_id=790255174]
+visible = false
 position = Vector2(2, 41)
 texture = ExtResource("5_lquwl")
 
-[node name="Label" type="Label" parent="TannieSpeechBox/tannie" unique_id=1826317297]
+[node name="Label" type="Label" parent="TannieSpeechBox/tannie" unique_id=56736861]
+visible = false
 offset_left = -52.0
 offset_top = -45.0
 offset_right = 78.0
@@ -78,6 +103,11 @@ position = Vector2(159, 20)
 position = Vector2(93, 365.99997)
 scale = Vector2(3.88, 5.9999986)
 texture = ExtResource("5_lquwl")
+
+[node name="RedactedfileSmall" type="Sprite2D" parent="redacted_text/page_open" unique_id=630420188]
+position = Vector2(15, 345)
+scale = Vector2(3.1978393, 3.1978393)
+texture = ExtResource("10_4c57u")
 
 [node name="Label" type="Label" parent="redacted_text/page_open" unique_id=627572364]
 offset_left = -52.0

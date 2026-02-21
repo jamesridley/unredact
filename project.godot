@@ -14,3 +14,12 @@ config/name="unredact"
 run/main_scene="uid://chbs341wsxyxt"
 config/features=PackedStringArray("4.6")
 config/icon="res://icon.svg"
+
+[display]
+
+window/stretch/mode="viewport"
+window/stretch/scale_mode="integer"
+
+[rendering]
+
+textures/canvas_textures/default_texture_filter=0
