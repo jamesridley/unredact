@@ -1,0 +1,17 @@
+[gd_scene format=3 uid="uid://bky7hwurpo31r"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7dm0k"]
+size = Vector2(283, 78)
+
+[node name="Area2D" type="Area2D" unique_id=450030852]
+
+[node name="Label" type="Label" parent="." unique_id=1826317297]
+offset_left = -51.0
+offset_top = -46.0
+offset_right = 79.0
+offset_bottom = -23.0
+text = "microfilm viewer"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=238906429]
+position = Vector2(5, 13.5)
+shape = SubResource("RectangleShape2D_7dm0k")

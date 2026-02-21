@@ -11,5 +11,6 @@ config_version=5
 [application]
 
 config/name="unredact"
+run/main_scene="uid://chbs341wsxyxt"
 config/features=PackedStringArray("4.6")
 config/icon="res://icon.svg"

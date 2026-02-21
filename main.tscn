@@ -1,0 +1,100 @@
+[gd_scene format=3 uid="uid://chbs341wsxyxt"]
+
+[ext_resource type="Script" uid="uid://ck5xrfm4667qq" path="res://main.gd" id="1_7mycd"]
+[ext_resource type="PackedScene" uid="uid://bky7hwurpo31r" path="res://clickable.tscn" id="1_ig7tw"]
+[ext_resource type="Script" uid="uid://pqliw5wj4d8p" path="res://tannie_speech_box.gd" id="2_0xm2m"]
+[ext_resource type="PackedScene" uid="uid://c4n1yjgc3ryno" path="res://microfilm_view.tscn" id="4_1bvp3"]
+[ext_resource type="Texture2D" uid="uid://dgl10n2iuj0ic" path="res://icon.svg" id="5_lquwl"]
+[ext_resource type="Script" uid="uid://bglid4layd6sq" path="res://redacted_page.gd" id="6_7mycd"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ig7tw"]
+size = Vector2(334, 268)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_7mycd"]
+size = Vector2(503, 133)
+
+[node name="Main" type="Node2D" unique_id=19023574]
+script = ExtResource("1_7mycd")
+
+[node name="microfilm_viewer" parent="." unique_id=450030852 instance=ExtResource("1_ig7tw")]
+position = Vector2(142, 450)
+
+[node name="CollisionShape2D" parent="microfilm_viewer" index="1" unique_id=238906429]
+position = Vector2(55, 14)
+
+[node name="Icon2" type="Sprite2D" parent="microfilm_viewer" unique_id=30784691]
+position = Vector2(79, 22)
+scale = Vector2(2.28, 0.68)
+texture = ExtResource("5_lquwl")
+
+[node name="TannieSpeechBox" type="Node2D" parent="." unique_id=401323388 node_paths=PackedStringArray("speechbox")]
+position = Vector2(672, 163)
+script = ExtResource("2_0xm2m")
+speechbox = NodePath("speechbox")
+
+[node name="speechbox" type="VBoxContainer" parent="TannieSpeechBox" unique_id=304485934]
+visible = false
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="Label" type="Label" parent="TannieSpeechBox/speechbox" unique_id=517221826]
+layout_mode = 2
+text = "ugh another request?"
+
+[node name="search_input" type="LineEdit" parent="TannieSpeechBox/speechbox" unique_id=1283126535]
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+placeholder_text = "what ya lookin for?"
+
+[node name="tannie" type="Area2D" parent="TannieSpeechBox" unique_id=1189918112]
+position = Vector2(159, 246)
+
+[node name="Icon" type="Sprite2D" parent="TannieSpeechBox/tannie" unique_id=790255174]
+position = Vector2(2, 41)
+texture = ExtResource("5_lquwl")
+
+[node name="Label" type="Label" parent="TannieSpeechBox/tannie" unique_id=1826317297]
+offset_left = -52.0
+offset_top = -45.0
+offset_right = 78.0
+offset_bottom = -22.0
+text = "tannie"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TannieSpeechBox/tannie" unique_id=1693361682]
+position = Vector2(8, -18)
+shape = SubResource("RectangleShape2D_ig7tw")
+
+[node name="microfilm_view" parent="." unique_id=639342175 instance=ExtResource("4_1bvp3")]
+position = Vector2(-3, 665)
+
+[node name="redacted_text" type="Node2D" parent="." unique_id=157428480]
+position = Vector2(36, 555)
+script = ExtResource("6_7mycd")
+
+[node name="page_open" type="Area2D" parent="redacted_text" unique_id=1384055725]
+position = Vector2(159, 20)
+
+[node name="Icon" type="Sprite2D" parent="redacted_text/page_open" unique_id=1882735104]
+position = Vector2(93, 365.99997)
+scale = Vector2(3.88, 5.9999986)
+texture = ExtResource("5_lquwl")
+
+[node name="Label" type="Label" parent="redacted_text/page_open" unique_id=627572364]
+offset_left = -52.0
+offset_top = 6.0
+offset_right = 78.0
+offset_bottom = 29.0
+text = "redacted page"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="redacted_text/page_open" unique_id=1171594148]
+position = Vector2(92.5, 49.5)
+shape = SubResource("RectangleShape2D_7mycd")
+
+[connection signal="input_event" from="microfilm_viewer" to="." method="_on_microfilm_viewer_input_event"]
+[connection signal="input_event" from="microfilm_viewer" to="TannieSpeechBox" method="_on_microfilm_viewer_input_event"]
+[connection signal="text_submitted" from="TannieSpeechBox/speechbox/search_input" to="TannieSpeechBox" method="_on_search_input_text_submitted"]
+[connection signal="input_event" from="TannieSpeechBox/tannie" to="TannieSpeechBox" method="_on_tannie_input_event"]
+[connection signal="exit_pressed" from="microfilm_view" to="." method="_on_microfilm_view_exit_pressed"]
+[connection signal="input_event" from="redacted_text/page_open" to="redacted_text" method="_on_page_open_input_event"]
+
+[editable path="microfilm_viewer"]
