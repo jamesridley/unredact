@@ -9,7 +9,7 @@ on:
 
 env:
   GODOT_VERSION: "4.3"          # ← Change to your Godot version
-  EXPORT_NAME: "unredact"        # ← Change to your game's name (used for output files)
+  EXPORT_NAME: "index"        # ← Change to your game's name (used for output files)
   ITCH_USER: "jamesridley"  # ← Your itch.io username
   ITCH_GAME: "unredact"      # ← Your itch.io game slug (from the URL)
 
