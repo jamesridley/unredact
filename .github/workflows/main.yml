@@ -65,13 +65,12 @@ jobs:
       
       # ── 5. Build the HTML5 export ──────────────────────────────────────────
       - name: Import project (build UID cache)
-        run: |
-          # Run the editor briefly to generate the .godot/imported/ cache and UID map.
-          # It will "fail" with exit code 0 or 1 — we ignore the exit code since
-          # headless import exits non-zero even on success.
-          godot --headless --editor --quit --path . 2>&1 || true
+        run: godot --headless --editor --quit --path . 2>&1 || true
 
-      
+      - name: Run db_builder
+        run: |
+          godot --headless --path . --script scripts/db_builder_ci.gd
+          echo "Exit code: $?"
       - name: Export game (HTML5)
         run: |
           mkdir -p build/html
