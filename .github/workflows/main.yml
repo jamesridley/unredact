@@ -71,10 +71,7 @@ jobs:
           # headless import exits non-zero even on success.
           godot --headless --editor --quit --path . 2>&1 || true
 
-      - name: Export game (HTML5)
-        run: |
-          mkdir -p build/html
-          godot --headless --export-release "Web" "build/html/index.html"
+      
       - name: Export game (HTML5)
         run: |
           mkdir -p build/html
