@@ -1,0 +1,123 @@
+
+name: Build & Deploy to itch.io
+
+on:
+  push:
+    branches:
+      - main        # Triggers on every push to main
+  workflow_dispatch: # Also allows manual triggering from the GitHub UI
+
+env:
+  GODOT_VERSION: "4.3"          # ← Change to your Godot version
+  EXPORT_NAME: "unredact"        # ← Change to your game's name (used for output files)
+  ITCH_USER: "jamesridley"  # ← Your itch.io username
+  ITCH_GAME: "unredact"      # ← Your itch.io game slug (from the URL)
+
+jobs:
+  build-and-deploy:
+    name: Build HTML5 & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Check out your repository ──────────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true   # Enable if you use Git LFS for large assets
+
+      # ── 2. Cache the Godot editor + export templates ───────────────────────
+      #    This avoids re-downloading (~200 MB) on every run.
+      - name: Cache Godot files
+        uses: actions/cache@v4
+        id: cache-godot
+        with:
+          path: |
+            ~/.local/share/godot
+            /usr/local/bin/godot
+          key: godot-${{ env.GODOT_VERSION }}
+
+      # ── 3. Install Godot editor ────────────────────────────────────────────
+      - name: Install Godot ${{ env.GODOT_VERSION }}
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          GODOT_FILENAME="Godot_v${GODOT_VERSION}-stable_linux.x86_64"
+          wget -q "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/${GODOT_FILENAME}.zip"
+          unzip -q "${GODOT_FILENAME}.zip"
+          mv "${GODOT_FILENAME}" /usr/local/bin/godot
+          chmod +x /usr/local/bin/godot
+
+      # ── 4. Install HTML5 export templates ─────────────────────────────────
+      - name: Install Godot export templates
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          TEMPLATES_FILENAME="Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          wget -q "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/${TEMPLATES_FILENAME}"
+          mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          unzip -q "${TEMPLATES_FILENAME}" \
+            -d ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+          # Godot unzips into a "templates/" subfolder — flatten it
+          mv ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/templates/* \
+             ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
+          rmdir ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/templates
+
+      # ── 5. Build the HTML5 export ──────────────────────────────────────────
+      - name: Export game (HTML5)
+        run: |
+          mkdir -p build/html
+          # --headless runs Godot without a display (required on CI)
+          # "Web" must match the export preset name in your export_presets.cfg
+          godot --headless --export-release "Web" "build/html/${{ env.EXPORT_NAME }}.html"
+
+      # ── 6. Add a SharedArrayBuffer header shim ─────────────────────────────
+      #    itch.io does NOT send the Cross-Origin headers that Godot 4's
+      #    multi-threaded HTML export needs.  This step embeds a Service Worker
+      #    that adds them client-side, so the game actually runs.
+      - name: Patch for itch.io (COOP/COEP headers shim)
+        run: |
+          cat << 'EOF' > build/html/coi-serviceworker.js
+          /* coi-serviceworker v0.1.7 - https://github.com/gzuidhof/coi-serviceworker */
+          self.addEventListener("install",()=>self.skipWaiting());
+          self.addEventListener("activate",e=>e.waitUntil(self.clients.claim()));
+          self.addEventListener("fetch",e=>{
+            if(e.request.cache==="only-if-cached"&&e.request.mode!=="same-origin")return;
+            e.respondWith(
+              fetch(e.request).then(r=>{
+                if(r.status===0)return r;
+                const h=new Headers(r.headers);
+                h.set("Cross-Origin-Embedder-Policy","require-corp");
+                h.set("Cross-Origin-Opener-Policy","same-origin");
+                return new Response(r.body,{status:r.status,statusText:r.statusText,headers:h});
+              })
+            );
+          });
+          EOF
+
+          # Inject the SW registration snippet into the exported HTML <head>
+          INJECT='<script>if(!self.crossOriginIsolated){navigator.serviceWorker.register("coi-serviceworker.js").then(()=>location.reload())}</script>'
+          sed -i "s|</head>|${INJECT}</head>|" "build/html/${{ env.EXPORT_NAME }}.html"
+
+      # ── 7. Upload the build as an artifact (optional but handy for debugging)
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: html-build
+          path: build/html/
+
+      # ── 8. Install butler (itch.io's upload CLI) ───────────────────────────
+      - name: Install butler
+        run: |
+          wget -q https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default -O butler.zip
+          unzip -q butler.zip
+          chmod +x butler
+          ./butler -V   # print version to confirm install
+
+      # ── 9. Push to itch.io ─────────────────────────────────────────────────
+      #    BUTLER_API_KEY must be added as a GitHub Actions secret.
+      #    Get it from: https://itch.io/user/settings/api-keys
+      - name: Deploy to itch.io
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+        run: |
+          ./butler push build/html/ \
+            "${{ env.ITCH_USER }}/${{ env.ITCH_GAME }}:html5" \
+            --userversion-file version.txt   # optional: remove if you don't have a version file
