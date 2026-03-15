@@ -62,8 +62,19 @@ jobs:
           mv ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/templates/* \
              ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
           rmdir ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/templates
-
+      
       # ── 5. Build the HTML5 export ──────────────────────────────────────────
+      - name: Import project (build UID cache)
+        run: |
+          # Run the editor briefly to generate the .godot/imported/ cache and UID map.
+          # It will "fail" with exit code 0 or 1 — we ignore the exit code since
+          # headless import exits non-zero even on success.
+          godot --headless --editor --quit --path . 2>&1 || true
+
+      - name: Export game (HTML5)
+        run: |
+          mkdir -p build/html
+          godot --headless --export-release "Web" "build/html/index.html"
       - name: Export game (HTML5)
         run: |
           mkdir -p build/html
