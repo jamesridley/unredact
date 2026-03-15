@@ -26,19 +26,24 @@ jobs:
           lfs: true   # Enable if you use Git LFS for large assets
 
       # ── 2. Cache the Godot editor + export templates ───────────────────────
-      #    This avoids re-downloading (~200 MB) on every run.
-      - name: Cache Godot files
+      # Cache the Godot editor binary
+      - name: Cache Godot editor
         uses: actions/cache@v4
-        id: cache-godot
+        id: cache-godot-editor
         with:
-          path: |
-            ~/.local/share/godot
-            /usr/local/bin/godot
-          key: godot-${{ env.GODOT_VERSION }}
+          path: /usr/local/bin/godot
+          key: godot-editor-${{ env.GODOT_VERSION }}
 
-      # ── 3. Install Godot editor ────────────────────────────────────────────
+      # Cache export templates separately
+      - name: Cache Godot export templates
+        uses: actions/cache@v4
+        id: cache-godot-templates
+        with:
+          path: ~/.local/share/godot/export_templates/${{ env.GODOT_VERSION }}.stable
+          key: godot-templates-${{ env.GODOT_VERSION }}
+
       - name: Install Godot ${{ env.GODOT_VERSION }}
-        if: steps.cache-godot.outputs.cache-hit != 'true'
+        if: steps.cache-godot-editor.outputs.cache-hit != 'true'
         run: |
           GODOT_FILENAME="Godot_v${GODOT_VERSION}-stable_linux.x86_64"
           wget -q "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/${GODOT_FILENAME}.zip"
@@ -46,16 +51,14 @@ jobs:
           mv "${GODOT_FILENAME}" /usr/local/bin/godot
           chmod +x /usr/local/bin/godot
 
-      # ── 4. Install HTML5 export templates ─────────────────────────────────
       - name: Install Godot export templates
-        if: steps.cache-godot.outputs.cache-hit != 'true'
+        if: steps.cache-godot-templates.outputs.cache-hit != 'true'
         run: |
           TEMPLATES_FILENAME="Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
           wget -q "https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/${TEMPLATES_FILENAME}"
           mkdir -p ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
           unzip -q "${TEMPLATES_FILENAME}" \
             -d ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
-          # Godot unzips into a "templates/" subfolder — flatten it
           mv ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/templates/* \
              ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/
           rmdir ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable/templates
@@ -119,5 +122,4 @@ jobs:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
         run: |
           ./butler push build/html/ \
-            "${{ env.ITCH_USER }}/${{ env.ITCH_GAME }}:html5" \
-            --userversion-file version.txt   # optional: remove if you don't have a version file
+            "${{ env.ITCH_USER }}/${{ env.ITCH_GAME }}:html5"
